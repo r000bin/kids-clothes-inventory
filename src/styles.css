@@ -246,3 +246,18 @@ code { background: var(--accent-soft); padding: 0 4px; border-radius: 4px; }
   border: 1px solid var(--danger); color: var(--danger);
   background: none; border-radius: 9px; padding: 12px; margin-top: 8px;
 }
+
+/* -------------------------------------------------------- language switch */
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+.auth-head { display: flex; align-items: center; justify-content: space-between; }
+
+.lang-switch {
+  display: inline-flex; gap: 2px;
+  border: 1px solid var(--line); border-radius: 999px; padding: 2px;
+}
+.lang-switch button {
+  border: 0; background: none; color: var(--muted);
+  font-size: .75rem; font-weight: 600; letter-spacing: .02em;
+  padding: 2px 8px; border-radius: 999px;
+}
+.lang-switch button.on { background: var(--accent); color: #fff; }

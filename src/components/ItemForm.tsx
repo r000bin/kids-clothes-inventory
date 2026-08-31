@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { CATEGORIES, SIZES } from '../lib/constants'
+import { useI18n } from '../lib/i18n'
 import { deletePhoto, uploadPhoto } from '../lib/photos'
 import type { Item, ItemDraft } from '../lib/types'
 import { Thumb } from './Thumb'
@@ -16,6 +17,7 @@ type Props = {
 }
 
 export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClose }: Props) {
+  const { t, categoryLabel } = useI18n()
   const knownCategory =
     !item || (CATEGORIES as readonly string[]).includes(item.category)
   const [category, setCategory] = useState(item ? (knownCategory ? item.category : CUSTOM) : CATEGORIES[0])
@@ -34,7 +36,7 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     if (!resolvedCategory || !size) {
-      setError('Category and size are both needed.')
+      setError(t('needCategoryAndSize'))
       return
     }
     setBusy(true)
@@ -66,7 +68,7 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
 
   async function onDeleteClick() {
     if (!onDelete) return
-    if (!confirm('Delete this entry?')) return
+    if (!confirm(t('confirmDelete'))) return
     setBusy(true)
     try {
       await onDelete()
@@ -82,40 +84,40 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
       <form className="sheet" onClick={(e) => e.stopPropagation()} onSubmit={onSubmit}>
         <header className="sheet-head">
           <button type="button" className="link" onClick={onClose}>
-            Cancel
+            {t('cancel')}
           </button>
-          <strong>{item ? 'Edit entry' : 'New entry'}</strong>
+          <strong>{item ? t('editEntry') : t('newEntry')}</strong>
           <button type="submit" className="link strong" disabled={busy}>
-            {busy ? 'Saving…' : 'Save'}
+            {busy ? t('saving') : t('save')}
           </button>
         </header>
 
         <div className="sheet-body">
           <label>
-            What is it?
+            {t('whatIsIt')}
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               {CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {categoryLabel(c)}
                 </option>
               ))}
-              <option value={CUSTOM}>Something else…</option>
+              <option value={CUSTOM}>{t('somethingElse')}</option>
             </select>
           </label>
           {category === CUSTOM && (
             <label>
-              Name it
+              {t('nameIt')}
               <input
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value)}
-                placeholder="e.g. Ski gloves"
+                placeholder={t('customPlaceholder')}
                 autoFocus
               />
             </label>
           )}
 
           <label>
-            Size
+            {t('size')}
             <div className="size-grid">
               {SIZES.map((s) => (
                 <button
@@ -131,7 +133,7 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
           </label>
 
           <label>
-            How many
+            {t('howMany')}
             <div className="stepper">
               <button type="button" onClick={() => setQuantity((q) => Math.max(0, q - 1))}>
                 −
@@ -150,12 +152,12 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
           </label>
 
           <label>
-            Where is it
+            {t('whereIsIt')}
             <input
               list="known-locations"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Basement box A"
+              placeholder={t('locationPlaceholder')}
             />
             <datalist id="known-locations">
               {locations.map((l) => (
@@ -165,12 +167,12 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
           </label>
 
           <label>
-            Notes
+            {t('notes')}
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Brand, condition, who it came from…"
+              placeholder={t('notesPlaceholder')}
             />
           </label>
 
@@ -184,7 +186,7 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
             )}
             <div className="photo-actions">
               <label className="button">
-                {photoPath || photoFile ? 'Replace photo' : 'Add photo'}
+                {photoPath || photoFile ? t('replacePhoto') : t('addPhoto')}
                 <input
                   type="file"
                   accept="image/*"
@@ -205,7 +207,7 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
                     setPhotoPath(null)
                   }}
                 >
-                  Remove photo
+                  {t('removePhoto')}
                 </button>
               )}
             </div>
@@ -215,7 +217,7 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
 
           {onDelete && (
             <button type="button" className="danger-button" onClick={onDeleteClick} disabled={busy}>
-              Delete entry
+              {t('deleteEntry')}
             </button>
           )}
         </div>

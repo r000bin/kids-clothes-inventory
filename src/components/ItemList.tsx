@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { compareSizes, sizeRank } from '../lib/constants'
+import { useI18n } from '../lib/i18n'
 import type { Item } from '../lib/types'
 import { Thumb } from './Thumb'
 
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export function ItemList({ items, minSize, onEdit, onAdjust }: Props) {
+  const { t, lang, categoryLabel } = useI18n()
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
   const groups = useMemo(() => {
@@ -24,13 +26,15 @@ export function ItemList({ items, minSize, onEdit, onAdjust }: Props) {
       .sort((a, b) => compareSizes(a[0], b[0]))
       .map(([size, group]) => ({
         size,
-        items: group.sort((a, b) => a.category.localeCompare(b.category)),
+        items: group.sort((a, b) =>
+          categoryLabel(a.category).localeCompare(categoryLabel(b.category), lang),
+        ),
         total: group.reduce((sum, it) => sum + it.quantity, 0),
       }))
-  }, [items])
+  }, [items, lang, categoryLabel])
 
   if (groups.length === 0) {
-    return <p className="empty">Nothing here yet.</p>
+    return <p className="empty">{t('emptyList')}</p>
   }
 
   const minRank = minSize ? sizeRank(minSize) : -1
@@ -47,8 +51,8 @@ export function ItemList({ items, minSize, onEdit, onAdjust }: Props) {
               onClick={() => setCollapsed((c) => ({ ...c, [size]: isOpen }))}
             >
               <span className="chev">{isOpen ? '▾' : '▸'}</span>
-              <span className="size-name">Size {size}</span>
-              {outgrown && <span className="badge">pass on</span>}
+              <span className="size-name">{t('sizeHeading', { s: size })}</span>
+              {outgrown && <span className="badge">{t('passOnBadge')}</span>}
               <span className="size-total">{total}</span>
             </button>
             {isOpen && (
@@ -57,12 +61,12 @@ export function ItemList({ items, minSize, onEdit, onAdjust }: Props) {
                   <li key={item.id} className="row">
                     <button className="row-main" onClick={() => onEdit(item)}>
                       {item.photo_path ? (
-                        <Thumb path={item.photo_path} alt={item.category} className="thumb" />
+                        <Thumb path={item.photo_path} alt={categoryLabel(item.category)} className="thumb" />
                       ) : (
                         <div className="thumb thumb-empty" />
                       )}
                       <span className="row-text">
-                        <span className="row-title">{item.category}</span>
+                        <span className="row-title">{categoryLabel(item.category)}</span>
                         <span className="row-sub">
                           {[item.location, item.notes].filter(Boolean).join(' · ') || '—'}
                         </span>
@@ -70,14 +74,14 @@ export function ItemList({ items, minSize, onEdit, onAdjust }: Props) {
                     </button>
                     <div className="qty">
                       <button
-                        aria-label={`One fewer ${item.category}`}
+                        aria-label={t('oneFewer', { c: categoryLabel(item.category) })}
                         onClick={() => onAdjust(item, -1)}
                       >
                         −
                       </button>
                       <span>{item.quantity}</span>
                       <button
-                        aria-label={`One more ${item.category}`}
+                        aria-label={t('oneMore', { c: categoryLabel(item.category) })}
                         onClick={() => onAdjust(item, 1)}
                       >
                         +

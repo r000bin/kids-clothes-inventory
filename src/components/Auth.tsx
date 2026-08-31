@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { supabase } from '../lib/supabase'
+import { LangSwitcher, useI18n } from '../lib/i18n'
 
 export function Auth() {
+  const { t } = useI18n()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -19,10 +21,13 @@ export function Auth() {
   return (
     <div className="auth">
       <form className="card auth-card" onSubmit={onSubmit}>
-        <h1>Clothes Inventory</h1>
-        <p className="muted">Sign in to see what is in the boxes.</p>
+        <div className="auth-head">
+          <h1>{t('appTitle')}</h1>
+          <LangSwitcher />
+        </div>
+        <p className="muted">{t('authIntro')}</p>
         <label>
-          Email
+          {t('email')}
           <input
             type="email"
             inputMode="email"
@@ -33,7 +38,7 @@ export function Auth() {
           />
         </label>
         <label>
-          Password
+          {t('password')}
           <input
             type="password"
             autoComplete="current-password"
@@ -44,12 +49,9 @@ export function Auth() {
         </label>
         {error && <p className="error">{error}</p>}
         <button className="primary" type="submit" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
+          {busy ? t('signingIn') : t('signIn')}
         </button>
-        <p className="muted small">
-          Accounts are created for you in the Supabase dashboard under
-          Authentication → Users.
-        </p>
+        <p className="muted small">{t('authNote')}</p>
       </form>
     </div>
   )

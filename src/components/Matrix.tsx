@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { compareSizes, sizeRank } from '../lib/constants'
+import { useI18n } from '../lib/i18n'
 import type { Item } from '../lib/types'
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
  * "she has grown out of 110 - what do we already have in 116?" at a glance.
  */
 export function Matrix({ items, minSize, onCell }: Props) {
+  const { t, lang, categoryLabel } = useI18n()
   const { sizes, categories, cells } = useMemo(() => {
     const sizeSet = new Set<string>()
     const categorySet = new Set<string>()
@@ -25,13 +27,15 @@ export function Matrix({ items, minSize, onCell }: Props) {
     }
     return {
       sizes: [...sizeSet].sort(compareSizes),
-      categories: [...categorySet].sort((a, b) => a.localeCompare(b)),
+      categories: [...categorySet].sort((a, b) =>
+        categoryLabel(a).localeCompare(categoryLabel(b), lang),
+      ),
       cells: cellMap,
     }
-  }, [items])
+  }, [items, lang, categoryLabel])
 
   if (sizes.length === 0) {
-    return <p className="empty">Nothing here yet.</p>
+    return <p className="empty">{t('emptyList')}</p>
   }
 
   const minRank = minSize ? sizeRank(minSize) : -1
@@ -52,7 +56,7 @@ export function Matrix({ items, minSize, onCell }: Props) {
         <tbody>
           {categories.map((c) => (
             <tr key={c}>
-              <th className="rowhead">{c}</th>
+              <th className="rowhead">{categoryLabel(c)}</th>
               {sizes.map((s) => {
                 const n = cells.get(`${c}\u0000${s}`) ?? 0
                 return (

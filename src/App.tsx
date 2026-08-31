@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { isConfigured, supabase } from './lib/supabase'
 import { SIZES, sizeRank } from './lib/constants'
+import { LangSwitcher, useI18n } from './lib/i18n'
 import { useInventory } from './lib/useInventory'
 import type { Item, ItemDraft } from './lib/types'
 import { Auth } from './components/Auth'
@@ -13,6 +14,7 @@ type Tab = 'list' | 'matrix'
 type Editing = { item: Item | null } | null
 
 export default function App() {
+  const { t } = useI18n()
   const [session, setSession] = useState<Session | null>(null)
   const [ready, setReady] = useState(false)
 
@@ -30,7 +32,7 @@ export default function App() {
   }, [])
 
   if (!isConfigured) return <Setup />
-  if (!ready) return <div className="splash">Loading…</div>
+  if (!ready) return <div className="splash">{t('loading')}</div>
   if (!session) return <Auth />
   return <Inventory />
 }
@@ -51,6 +53,7 @@ function Setup() {
 }
 
 function Inventory() {
+  const { t, categoryLabel } = useI18n()
   const {
     items,
     minSize,
@@ -84,11 +87,11 @@ function Inventory() {
       if (categoryFilter && item.category !== categoryFilter) return false
       if (passOnOnly && !(minRank >= 0 && sizeRank(item.size) < minRank)) return false
       if (!q) return true
-      return [item.category, item.size, item.location, item.notes]
+      return [item.category, categoryLabel(item.category), item.size, item.location, item.notes]
         .filter(Boolean)
         .some((field) => String(field).toLowerCase().includes(q))
     })
-  }, [items, query, sizeFilter, categoryFilter, passOnOnly, minRank])
+  }, [items, query, sizeFilter, categoryFilter, passOnOnly, minRank, categoryLabel])
 
   const totals = useMemo(() => {
     let all = 0
@@ -118,16 +121,19 @@ function Inventory() {
     <div className="app">
       <header className="topbar">
         <div className="topbar-row">
-          <h1>Clothes Inventory</h1>
-          <button className="link" onClick={() => void supabase.auth.signOut()}>
-            Sign out
-          </button>
+          <h1>{t('appTitle')}</h1>
+          <div className="topbar-actions">
+            <LangSwitcher />
+            <button className="link" onClick={() => void supabase.auth.signOut()}>
+              {t('signOut')}
+            </button>
+          </div>
         </div>
         <div className="topbar-row">
           <label className="minsize">
-            Smallest size still worn
+            {t('minSizeLabel')}
             <select value={minSize} onChange={(e) => void setMinSize(e.target.value)}>
-              <option value="">— not set —</option>
+              <option value="">{t('notSet')}</option>
               {SIZES.map((s) => (
                 <option key={s} value={s}>
                   {s}
@@ -137,12 +143,12 @@ function Inventory() {
           </label>
         </div>
         <p className="summary">
-          {totals.all} pieces
+          {t('pieces', { n: totals.all })}
           {minRank >= 0 && (
             <>
               {' · '}
               <button className="link" onClick={() => setPassOnOnly((v) => !v)}>
-                {totals.passOn} ready to pass on
+                {t('readyToPassOn', { n: totals.passOn })}
               </button>
             </>
           )}
@@ -152,7 +158,7 @@ function Inventory() {
       <div className="filters">
         <input
           type="search"
-          placeholder="Search category, box, note…"
+          placeholder={t('searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -160,21 +166,21 @@ function Inventory() {
           <div className="chips">
             {sizeFilter && (
               <button className="chip" onClick={() => setSizeFilter('')}>
-                Size {sizeFilter} ✕
+                {t('sizeChip', { s: sizeFilter })} ✕
               </button>
             )}
             {categoryFilter && (
               <button className="chip" onClick={() => setCategoryFilter('')}>
-                {categoryFilter} ✕
+                {categoryLabel(categoryFilter)} ✕
               </button>
             )}
             {passOnOnly && (
               <button className="chip" onClick={() => setPassOnOnly(false)}>
-                Ready to pass on ✕
+                {t('passOnChip')} ✕
               </button>
             )}
             <button className="chip ghost" onClick={clearFilters}>
-              Clear all
+              {t('clearFilters')}
             </button>
           </div>
         )}
@@ -183,7 +189,7 @@ function Inventory() {
       <main>
         {error && <p className="error">{error}</p>}
         {loading ? (
-          <p className="empty">Loading…</p>
+          <p className="empty">{t('loading')}</p>
         ) : tab === 'list' ? (
           <ItemList
             items={filtered}
@@ -204,16 +210,16 @@ function Inventory() {
         )}
       </main>
 
-      <button className="fab" onClick={() => setEditing({ item: null })} aria-label="Add entry">
+      <button className="fab" onClick={() => setEditing({ item: null })} aria-label={t('addEntry')}>
         +
       </button>
 
       <nav className="tabbar">
         <button className={tab === 'list' ? 'on' : ''} onClick={() => setTab('list')}>
-          By size
+          {t('tabBySize')}
         </button>
         <button className={tab === 'matrix' ? 'on' : ''} onClick={() => setTab('matrix')}>
-          Overview
+          {t('tabOverview')}
         </button>
       </nav>
 
