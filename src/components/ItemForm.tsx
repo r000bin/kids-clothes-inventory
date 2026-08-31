@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { SIZES } from '../lib/constants'
+import { categoryIcon } from '../lib/icons'
 import { useI18n } from '../lib/i18n'
 import { deletePhoto, uploadPhoto } from '../lib/photos'
 import type { Item, ItemDraft } from '../lib/types'
@@ -223,7 +224,9 @@ export function ItemForm({
             ) : photoPath ? (
               <Thumb path={photoPath} alt="Photo" className="thumb lg" />
             ) : (
-              <div className="thumb lg thumb-empty" />
+              <div className="thumb lg thumb-icon" aria-hidden="true">
+                {categoryIcon(resolvedCategory)}
+              </div>
             )}
             <div className="photo-actions">
               <label className="button">

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { compareSizes, sizeRank } from '../lib/constants'
+import { categoryIcon } from '../lib/icons'
 import { useI18n } from '../lib/i18n'
 import type { Item } from '../lib/types'
 import { Thumb } from './Thumb'
@@ -62,7 +63,9 @@ export function ItemList({ items, minSize, compareCategories, onEdit, onAdjust }
                       {item.photo_path ? (
                         <Thumb path={item.photo_path} alt={categoryLabel(item.category)} className="thumb" />
                       ) : (
-                        <div className="thumb thumb-empty" />
+                        <div className="thumb thumb-icon" aria-hidden="true">
+                          {categoryIcon(item.category)}
+                        </div>
                       )}
                       <span className="row-text">
                         <span className="row-title">{categoryLabel(item.category)}</span>
