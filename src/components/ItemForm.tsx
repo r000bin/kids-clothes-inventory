@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { CATEGORIES, SIZES } from '../lib/constants'
+import { SIZES } from '../lib/constants'
 import { useI18n } from '../lib/i18n'
 import { deletePhoto, uploadPhoto } from '../lib/photos'
 import type { Item, ItemDraft } from '../lib/types'
@@ -9,18 +9,30 @@ const CUSTOM = '__custom__'
 
 type Props = {
   item: Item | null
+  categories: string[]
   locations: string[]
   defaultSize?: string
   onSave: (draft: ItemDraft) => Promise<void>
   onDelete?: () => Promise<void>
+  onEditCategories: () => void
   onClose: () => void
 }
 
-export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClose }: Props) {
+export function ItemForm({
+  item,
+  categories,
+  locations,
+  defaultSize,
+  onSave,
+  onDelete,
+  onEditCategories,
+  onClose,
+}: Props) {
   const { t, categoryLabel } = useI18n()
-  const knownCategory =
-    !item || (CATEGORIES as readonly string[]).includes(item.category)
-  const [category, setCategory] = useState(item ? (knownCategory ? item.category : CUSTOM) : CATEGORIES[0])
+  const knownCategory = !item || categories.includes(item.category)
+  const [category, setCategory] = useState(
+    item ? (knownCategory ? item.category : CUSTOM) : categories[0] ?? CUSTOM,
+  )
   const [customCategory, setCustomCategory] = useState(knownCategory ? '' : item!.category)
   const [size, setSize] = useState(item?.size ?? defaultSize ?? '')
   const [quantity, setQuantity] = useState(item?.quantity ?? 1)
@@ -29,12 +41,12 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
   const [photoPath, setPhotoPath] = useState(item?.photo_path ?? null)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
+  const [flash, setFlash] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const resolvedCategory = category === CUSTOM ? customCategory.trim() : category
 
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function submit(addAnother: boolean) {
     if (!resolvedCategory || !size) {
       setError(t('needCategoryAndSize'))
       return
@@ -59,11 +71,28 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
         notes: notes.trim() || null,
         photo_path: nextPhoto,
       })
-      onClose()
+      if (addAnother) {
+        // Same box, next piece: keep category, size and location,
+        // clear what is specific to the piece just saved.
+        setQuantity(1)
+        setNotes('')
+        setPhotoFile(null)
+        setPhotoPath(null)
+        setBusy(false)
+        setFlash(true)
+        window.setTimeout(() => setFlash(false), 1600)
+      } else {
+        onClose()
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
       setBusy(false)
     }
+  }
+
+  function onSubmit(e: FormEvent) {
+    e.preventDefault()
+    void submit(false)
   }
 
   async function onDeleteClick() {
@@ -94,9 +123,21 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
 
         <div className="sheet-body">
           <label>
-            {t('whatIsIt')}
+            <span className="label-row">
+              {t('whatIsIt')}
+              <button
+                type="button"
+                className="link small"
+                onClick={(e) => {
+                  e.preventDefault()
+                  onEditCategories()
+                }}
+              >
+                {t('editCategories')}
+              </button>
+            </span>
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              {CATEGORIES.map((c) => (
+              {categories.map((c) => (
                 <option key={c} value={c}>
                   {categoryLabel(c)}
                 </option>
@@ -212,6 +253,17 @@ export function ItemForm({ item, locations, defaultSize, onSave, onDelete, onClo
               )}
             </div>
           </div>
+
+          {!item && (
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={busy}
+              onClick={() => void submit(true)}
+            >
+              {flash ? t('savedFlash') : busy ? t('saving') : t('saveAndNext')}
+            </button>
+          )}
 
           {error && <p className="error">{error}</p>}
 

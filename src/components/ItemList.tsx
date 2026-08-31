@@ -7,12 +7,13 @@ import { Thumb } from './Thumb'
 type Props = {
   items: Item[]
   minSize: string
+  compareCategories: (a: string, b: string) => number
   onEdit: (item: Item) => void
   onAdjust: (item: Item, delta: number) => void
 }
 
-export function ItemList({ items, minSize, onEdit, onAdjust }: Props) {
-  const { t, lang, categoryLabel } = useI18n()
+export function ItemList({ items, minSize, compareCategories, onEdit, onAdjust }: Props) {
+  const { t, categoryLabel } = useI18n()
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
   const groups = useMemo(() => {
@@ -26,12 +27,10 @@ export function ItemList({ items, minSize, onEdit, onAdjust }: Props) {
       .sort((a, b) => compareSizes(a[0], b[0]))
       .map(([size, group]) => ({
         size,
-        items: group.sort((a, b) =>
-          categoryLabel(a.category).localeCompare(categoryLabel(b.category), lang),
-        ),
+        items: group.sort((a, b) => compareCategories(a.category, b.category)),
         total: group.reduce((sum, it) => sum + it.quantity, 0),
       }))
-  }, [items, lang, categoryLabel])
+  }, [items, compareCategories])
 
   if (groups.length === 0) {
     return <p className="empty">{t('emptyList')}</p>

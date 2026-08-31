@@ -6,6 +6,7 @@ import type { Item } from '../lib/types'
 type Props = {
   items: Item[]
   minSize: string
+  compareCategories: (a: string, b: string) => number
   onCell: (category: string, size: string) => void
 }
 
@@ -13,8 +14,8 @@ type Props = {
  * Categories down the side, sizes across the top. This is the view that answers
  * "she has grown out of 110 - what do we already have in 116?" at a glance.
  */
-export function Matrix({ items, minSize, onCell }: Props) {
-  const { t, lang, categoryLabel } = useI18n()
+export function Matrix({ items, minSize, compareCategories, onCell }: Props) {
+  const { t, categoryLabel } = useI18n()
   const { sizes, categories, cells } = useMemo(() => {
     const sizeSet = new Set<string>()
     const categorySet = new Set<string>()
@@ -27,12 +28,10 @@ export function Matrix({ items, minSize, onCell }: Props) {
     }
     return {
       sizes: [...sizeSet].sort(compareSizes),
-      categories: [...categorySet].sort((a, b) =>
-        categoryLabel(a).localeCompare(categoryLabel(b), lang),
-      ),
+      categories: [...categorySet].sort(compareCategories),
       cells: cellMap,
     }
-  }, [items, lang, categoryLabel])
+  }, [items, compareCategories])
 
   if (sizes.length === 0) {
     return <p className="empty">{t('emptyList')}</p>

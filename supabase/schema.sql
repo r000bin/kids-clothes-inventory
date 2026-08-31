@@ -22,15 +22,19 @@ create index if not exists items_category_idx on public.items (category);
 
 -- ------------------------------------------------------------- settings
 -- Household-wide key/value settings, so both phones agree.
--- Currently used for 'min_size': the smallest size still worn by a kid.
--- Anything below it is flagged as "ready to pass on".
+--   min_size:      smallest size still worn; anything below is "ready to pass on".
+--   categories:    JSON array of category terms, editable and orderable in the app.
+--   category_sort: how the picker sorts them ('custom' | 'alpha' | 'freq').
 create table if not exists public.settings (
   key        text primary key,
   value      text,
   updated_at timestamptz not null default now()
 );
 
-insert into public.settings (key, value) values ('min_size', '')
+insert into public.settings (key, value) values
+  ('min_size', ''),
+  ('categories', ''),
+  ('category_sort', 'custom')
 on conflict (key) do nothing;
 
 -- -------------------------------------------------------- updated_at
@@ -66,8 +70,10 @@ create policy "items delete" on public.items for delete to authenticated using (
 
 drop policy if exists "settings read"   on public.settings;
 drop policy if exists "settings write"  on public.settings;
-create policy "settings read"  on public.settings for select to authenticated using (true);
-create policy "settings write" on public.settings for update to authenticated using (true) with check (true);
+drop policy if exists "settings insert" on public.settings;
+create policy "settings read"   on public.settings for select to authenticated using (true);
+create policy "settings write"  on public.settings for update to authenticated using (true) with check (true);
+create policy "settings insert" on public.settings for insert to authenticated with check (true);
 
 -- ------------------------------------------------------------- realtime
 -- Lets one phone see the other's changes without a refresh.

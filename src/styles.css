@@ -261,3 +261,41 @@ code { background: var(--accent-soft); padding: 0 4px; border-radius: 4px; }
   padding: 2px 8px; border-radius: 999px;
 }
 .lang-switch button.on { background: var(--accent); color: #fff; }
+
+/* ---------------------------------------------------- category manager */
+.label-row { display: flex; align-items: center; justify-content: space-between; }
+.label-row .link { padding: 0; }
+
+.seg {
+  display: inline-flex; gap: 2px; justify-self: start;
+  border: 1px solid var(--line); border-radius: 999px; padding: 2px;
+}
+.seg button {
+  border: 0; background: none; color: var(--muted);
+  font-size: .82rem; font-weight: 600;
+  padding: 5px 12px; border-radius: 999px;
+}
+.seg button.on { background: var(--accent); color: #fff; }
+
+.cat-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.cat-row { display: flex; align-items: center; gap: 6px; }
+.cat-row input { flex: 1; min-width: 0; padding: 9px 10px; }
+.cat-count {
+  min-width: 26px; text-align: center; flex: none;
+  font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.cat-row button {
+  width: 38px; height: 38px; flex: none;
+  border: 1px solid var(--line); background: var(--card); border-radius: 8px;
+}
+.cat-row button:disabled { opacity: .35; }
+.cat-row .cat-del { color: var(--danger); }
+.cat-add { display: flex; gap: 8px; }
+.cat-add input { flex: 1; min-width: 0; }
+
+.secondary-button {
+  border: 1px solid var(--accent); color: var(--accent);
+  background: var(--accent-soft); border-radius: 9px;
+  padding: 12px; font-weight: 600;
+}
+.secondary-button:disabled { opacity: .6; }

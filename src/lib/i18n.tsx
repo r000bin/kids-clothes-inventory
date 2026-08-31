@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { LEGACY_CATEGORY_DE } from './constants'
 
 export type Lang = 'de' | 'en'
 
@@ -53,6 +54,21 @@ const en = {
   deleteEntry: 'Delete entry',
   confirmDelete: 'Delete this entry?',
   needCategoryAndSize: 'Category and size are both needed.',
+  saveAndNext: 'Save + next',
+  savedFlash: 'Saved ✓',
+  editCategories: 'Edit terms',
+  categoriesTitle: 'Terms',
+  done: 'Done',
+  sortLabel: 'Order in the picker',
+  sortCustom: 'Custom',
+  sortAlpha: 'A–Z',
+  sortFreq: 'Most used',
+  addCategoryAction: 'Add',
+  newCategoryPlaceholder: 'New term…',
+  deleteCategoryConfirm: 'Remove “{c}” from the list? Existing entries keep their term.',
+  duplicateCategory: 'This term already exists.',
+  moveUp: 'Move up',
+  moveDown: 'Move down',
 }
 
 type Messages = typeof en
@@ -106,41 +122,24 @@ const de: Messages = {
   deleteEntry: 'Eintrag löschen',
   confirmDelete: 'Diesen Eintrag löschen?',
   needCategoryAndSize: 'Kategorie und Grösse werden beide benötigt.',
+  saveAndNext: 'Speichern + nächstes',
+  savedFlash: 'Gespeichert ✓',
+  editCategories: 'Begriffe bearbeiten',
+  categoriesTitle: 'Begriffe',
+  done: 'Fertig',
+  sortLabel: 'Reihenfolge in der Auswahl',
+  sortCustom: 'Eigene',
+  sortAlpha: 'A–Z',
+  sortFreq: 'Häufigste',
+  addCategoryAction: 'Hinzufügen',
+  newCategoryPlaceholder: 'Neuer Begriff…',
+  deleteCategoryConfirm: '«{c}» aus der Liste entfernen? Bestehende Einträge behalten ihren Begriff.',
+  duplicateCategory: 'Diesen Begriff gibt es schon.',
+  moveUp: 'Nach oben',
+  moveDown: 'Nach unten',
 }
 
 const MESSAGES: Record<Lang, Messages> = { de, en }
-
-// Items keep their canonical (English) category in the database; only the
-// display is translated. Ad-hoc categories typed via "Something else…" show
-// as typed in both languages.
-const CATEGORY_DE: Record<string, string> = {
-  'Body / Onesie': 'Body / Strampler',
-  'T-shirt': 'T-Shirt',
-  'Long-sleeve': 'Langarmshirt',
-  'Sweater / Hoodie': 'Pullover / Hoodie',
-  'Shirt / Blouse': 'Hemd / Bluse',
-  Dress: 'Kleid',
-  Skirt: 'Jupe / Rock',
-  Trousers: 'Hosen',
-  Jeans: 'Jeans',
-  Leggings: 'Leggings',
-  Shorts: 'Shorts',
-  Pyjamas: 'Pyjama',
-  Underwear: 'Unterwäsche',
-  Socks: 'Socken',
-  Tights: 'Strumpfhosen',
-  'Jacket (light)': 'Jacke (leicht)',
-  'Winter jacket': 'Winterjacke',
-  'Snow trousers': 'Schneehose',
-  'Rain gear': 'Regenkleidung',
-  'Hat / Cap': 'Mütze / Kappe',
-  Gloves: 'Handschuhe',
-  Scarf: 'Schal',
-  Swimwear: 'Badesachen',
-  Sportswear: 'Sportkleidung',
-  Shoes: 'Schuhe',
-  Other: 'Anderes',
-}
 
 function format(template: string, vars?: Record<string, string | number>): string {
   if (!vars) return template
@@ -184,8 +183,10 @@ export function LangProvider({ children }: { children: ReactNode }) {
       lang,
       setLang,
       t: (key, vars) => format(MESSAGES[lang][key], vars),
+      // Categories are stored as the user named them; the lookup only still
+      // translates entries written by old versions that stored English names.
       categoryLabel: (category) =>
-        lang === 'de' ? CATEGORY_DE[category] ?? category : category,
+        lang === 'de' ? LEGACY_CATEGORY_DE[category] ?? category : category,
     }),
     [lang],
   )

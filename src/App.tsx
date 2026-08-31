@@ -6,6 +6,7 @@ import { LangSwitcher, useI18n } from './lib/i18n'
 import { useInventory } from './lib/useInventory'
 import type { Item, ItemDraft } from './lib/types'
 import { Auth } from './components/Auth'
+import { CategoryManager } from './components/CategoryManager'
 import { ItemForm } from './components/ItemForm'
 import { ItemList } from './components/ItemList'
 import { Matrix } from './components/Matrix'
@@ -53,10 +54,12 @@ function Setup() {
 }
 
 function Inventory() {
-  const { t, categoryLabel } = useI18n()
+  const { t, lang, categoryLabel } = useI18n()
   const {
     items,
     minSize,
+    categories,
+    categorySort,
     loading,
     error,
     addItem,
@@ -64,6 +67,9 @@ function Inventory() {
     removeItem,
     adjustQuantity,
     setMinSize,
+    saveCategories,
+    setCategorySort,
+    renameCategory,
   } = useInventory()
 
   const [tab, setTab] = useState<Tab>('list')
@@ -72,6 +78,40 @@ function Inventory() {
   const [categoryFilter, setCategoryFilter] = useState('')
   const [passOnOnly, setPassOnOnly] = useState(false)
   const [editing, setEditing] = useState<Editing>(null)
+  const [managingCategories, setManagingCategories] = useState(false)
+
+  const categoryCounts = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const item of items) m.set(item.category, (m.get(item.category) ?? 0) + 1)
+    return m
+  }, [items])
+
+  // The category list in the order the picker should show it.
+  const orderedCategories = useMemo(() => {
+    const arr = [...categories]
+    if (categorySort === 'alpha') {
+      arr.sort((a, b) => categoryLabel(a).localeCompare(categoryLabel(b), lang))
+    } else if (categorySort === 'freq') {
+      arr.sort(
+        (a, b) =>
+          (categoryCounts.get(b) ?? 0) - (categoryCounts.get(a) ?? 0) ||
+          categoryLabel(a).localeCompare(categoryLabel(b), lang),
+      )
+    }
+    return arr
+  }, [categories, categorySort, categoryCounts, categoryLabel, lang])
+
+  // Same order for the list and the overview; terms no longer in the list
+  // (e.g. deleted ones still on entries) go to the end, alphabetically.
+  const compareCategories = useMemo(() => {
+    const pos = new Map(orderedCategories.map((c, i) => [c, i]))
+    return (a: string, b: string) => {
+      const pa = pos.get(a) ?? Number.MAX_SAFE_INTEGER
+      const pb = pos.get(b) ?? Number.MAX_SAFE_INTEGER
+      if (pa !== pb) return pa - pb
+      return categoryLabel(a).localeCompare(categoryLabel(b), lang)
+    }
+  }, [orderedCategories, categoryLabel, lang])
 
   const locations = useMemo(
     () => [...new Set(items.map((i) => i.location).filter((l): l is string => Boolean(l)))].sort(),
@@ -194,6 +234,7 @@ function Inventory() {
           <ItemList
             items={filtered}
             minSize={minSize}
+            compareCategories={compareCategories}
             onEdit={(item) => setEditing({ item })}
             onAdjust={(item, delta) => void adjustQuantity(item, delta)}
           />
@@ -201,6 +242,7 @@ function Inventory() {
           <Matrix
             items={filtered}
             minSize={minSize}
+            compareCategories={compareCategories}
             onCell={(category, size) => {
               setCategoryFilter(category)
               setSizeFilter(size)
@@ -226,11 +268,25 @@ function Inventory() {
       {editing && (
         <ItemForm
           item={editing.item}
+          categories={orderedCategories}
           locations={locations}
           defaultSize={sizeFilter || undefined}
           onSave={save}
           onDelete={editing.item ? () => removeItem(editing.item!) : undefined}
+          onEditCategories={() => setManagingCategories(true)}
           onClose={() => setEditing(null)}
+        />
+      )}
+
+      {managingCategories && (
+        <CategoryManager
+          categories={categories}
+          counts={categoryCounts}
+          sort={categorySort}
+          onSort={(s) => void setCategorySort(s)}
+          onSave={(list) => void saveCategories(list)}
+          onRename={(from, to) => void renameCategory(from, to)}
+          onClose={() => setManagingCategories(false)}
         />
       )}
     </div>
