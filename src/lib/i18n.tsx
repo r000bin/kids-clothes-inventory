@@ -67,8 +67,9 @@ const en = {
   newCategoryPlaceholder: 'New term…',
   deleteCategoryConfirm: 'Remove “{c}” from the list? Existing entries keep their term.',
   duplicateCategory: 'This term already exists.',
-  moveUp: 'Move up',
-  moveDown: 'Move down',
+  moveToTop: 'Move to top',
+  dragHandle: 'Drag to reorder',
+  dragHint: 'Drag ⠿ to reorder, or tap ⤒ to move a term to the top.',
 }
 
 type Messages = typeof en
@@ -135,8 +136,9 @@ const de: Messages = {
   newCategoryPlaceholder: 'Neuer Begriff…',
   deleteCategoryConfirm: '«{c}» aus der Liste entfernen? Bestehende Einträge behalten ihren Begriff.',
   duplicateCategory: 'Diesen Begriff gibt es schon.',
-  moveUp: 'Nach oben',
-  moveDown: 'Nach unten',
+  moveToTop: 'An den Anfang',
+  dragHandle: 'Ziehen zum Sortieren',
+  dragHint: '⠿ ziehen zum Sortieren, oder ⤒ tippen, um einen Begriff nach ganz oben zu setzen.',
 }
 
 const MESSAGES: Record<Lang, Messages> = { de, en }

@@ -167,23 +167,24 @@ export function useInventory() {
     }
   }, [])
 
+  // The three category actions throw on failure so the sheet that triggered
+  // them can show the message; the main-screen error would be hidden behind it.
+
   /** Persist a new category list (order, additions, deletions). */
   const saveCategories = useCallback(async (next: string[]) => {
+    const before = categoriesRef.current
     setCategoriesState(next)
     try {
       await writeSetting('categories', JSON.stringify(next))
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
+      setCategoriesState(before)
+      throw err
     }
   }, [])
 
   const setCategorySort = useCallback(async (sort: CategorySort) => {
     setCategorySortState(sort)
-    try {
-      await writeSetting('category_sort', sort)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    }
+    await writeSetting('category_sort', sort)
   }, [])
 
   /** Rename a term everywhere: in the list and on every existing entry. */
@@ -191,16 +192,12 @@ export function useInventory() {
     const next = categoriesRef.current.map((c) => (c === from ? to : c))
     setCategoriesState(next)
     setItems((prev) => prev.map((it) => (it.category === from ? { ...it, category: to } : it)))
-    try {
-      const { error: err } = await supabase
-        .from('items')
-        .update({ category: to })
-        .eq('category', from)
-      if (err) throw err
-      await writeSetting('categories', JSON.stringify(next))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err))
-    }
+    const { error: err } = await supabase
+      .from('items')
+      .update({ category: to })
+      .eq('category', from)
+    if (err) throw err
+    await writeSetting('categories', JSON.stringify(next))
   }, [])
 
   return {

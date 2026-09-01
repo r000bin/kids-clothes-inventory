@@ -282,9 +282,16 @@ code { background: var(--accent-soft); padding: 0 4px; border-radius: 4px; }
 }
 .seg button.on { background: var(--accent); color: #fff; }
 
+.hint { margin: -6px 0 0; }
 .cat-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.cat-row { display: flex; align-items: center; gap: 6px; }
+.cat-row { display: flex; align-items: center; gap: 6px; border-radius: 9px; }
+.cat-row.dragging { background: var(--accent-soft); outline: 2px solid var(--accent); }
 .cat-row input { flex: 1; min-width: 0; padding: 9px 10px; }
+.cat-row .cat-handle {
+  touch-action: none; cursor: grab; color: var(--muted);
+  border-color: transparent; background: none; font-size: 1.2rem;
+}
+.cat-row.dragging .cat-handle { cursor: grabbing; color: var(--accent); }
 .cat-count {
   min-width: 26px; text-align: center; flex: none;
   font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums;

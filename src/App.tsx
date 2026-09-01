@@ -269,10 +269,12 @@ function Inventory() {
         <ItemForm
           item={editing.item}
           categories={orderedCategories}
+          categorySort={categorySort}
           locations={locations}
           defaultSize={sizeFilter || undefined}
           onSave={save}
           onDelete={editing.item ? () => removeItem(editing.item!) : undefined}
+          onSort={setCategorySort}
           onEditCategories={() => setManagingCategories(true)}
           onClose={() => setEditing(null)}
         />
@@ -283,9 +285,9 @@ function Inventory() {
           categories={categories}
           counts={categoryCounts}
           sort={categorySort}
-          onSort={(s) => void setCategorySort(s)}
-          onSave={(list) => void saveCategories(list)}
-          onRename={(from, to) => void renameCategory(from, to)}
+          onSort={setCategorySort}
+          onSave={saveCategories}
+          onRename={renameCategory}
           onClose={() => setManagingCategories(false)}
         />
       )}

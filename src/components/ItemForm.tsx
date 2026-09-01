@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { SIZES } from '../lib/constants'
+import { SIZES, type CategorySort } from '../lib/constants'
 import { categoryIcon } from '../lib/icons'
 import { useI18n } from '../lib/i18n'
 import { deletePhoto, uploadPhoto } from '../lib/photos'
 import type { Item, ItemDraft } from '../lib/types'
+import { SortPicker } from './SortPicker'
 import { Thumb } from './Thumb'
 
 const CUSTOM = '__custom__'
@@ -11,10 +12,12 @@ const CUSTOM = '__custom__'
 type Props = {
   item: Item | null
   categories: string[]
+  categorySort: CategorySort
   locations: string[]
   defaultSize?: string
   onSave: (draft: ItemDraft) => Promise<void>
   onDelete?: () => Promise<void>
+  onSort: (sort: CategorySort) => Promise<void>
   onEditCategories: () => void
   onClose: () => void
 }
@@ -22,10 +25,12 @@ type Props = {
 export function ItemForm({
   item,
   categories,
+  categorySort,
   locations,
   defaultSize,
   onSave,
   onDelete,
+  onSort,
   onEditCategories,
   onClose,
 }: Props) {
@@ -137,6 +142,15 @@ export function ItemForm({
                 {t('editCategories')}
               </button>
             </span>
+            <SortPicker
+              value={categorySort}
+              onChange={(s) => {
+                setError(null)
+                onSort(s).catch((err) =>
+                  setError(err instanceof Error ? err.message : String(err)),
+                )
+              }}
+            />
             <select value={category} onChange={(e) => setCategory(e.target.value)}>
               {categories.map((c) => (
                 <option key={c} value={c}>
